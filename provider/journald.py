@@ -8,7 +8,6 @@ class Journald(object):
             self.j.add_match("%s=%s" % (k, v))
         self.j.seek_tail()
         self.j.get_previous()
-        self.j.get_next()
 
     def get_data(self):
         e = self.j.get_next()
