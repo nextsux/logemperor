@@ -3,6 +3,7 @@ import argparse
 import configparser
 import os
 import sys
+import time
 
 from server.worker_master import WorkerMaster
 
@@ -25,3 +26,9 @@ if __name__ == "__main__":
 
     config = configparser.ConfigParser()
     config.read(args.config)
+
+    wm = WorkerMaster(config.get('server', 'worker_listen'))
+    try:
+        wm.run()
+    except KeyboardInterrupt:
+        wm.stop()
