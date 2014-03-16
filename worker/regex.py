@@ -16,7 +16,7 @@ class Regex(object):
     def compiled_regex_generator(self):
         for grp, regexes in self.rules.items():
             for r in regexes:
-                yield r
+                yield grp, r
 
     def get_rules(self, grp):
         try:

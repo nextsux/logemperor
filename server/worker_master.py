@@ -1,19 +1,24 @@
+from log import logger
 from server.generic_master import GenericMasterThread, GenericMaster
 
 
 class WorkMasterThread(GenericMasterThread):
+    def __init__(self, *args, **kwargs):
+        self.last_used_client_index = 0
+        super(WorkMasterThread, self).__init__(*args, **kwargs)
+
     def new_connection(self, conn):
         self.push_filters_to_client(conn)
 
     def process_command(self, sock, command):
         if command == 'PING':
-            self.send_response(sock, 'PONG')
+            self.send(sock, 'PONG')
         elif command == 'QUIT':
-            self.send_response(sock, 'BYE')
+            self.send(sock, 'BYE')
             self.select_rlist.remove(sock)
             sock.close()
         else:
-            self.send_response(sock, 'UNKNOWN COMMAND')
+            self.send(sock, 'UNKNOWN COMMAND')
 
     def set_filters(self, filters):
         self.filters = filters
@@ -26,7 +31,17 @@ class WorkMasterThread(GenericMasterThread):
     def push_filters_to_client(self, sock):
         for grp, x in self.filters.items():
             for f in x:
-                self.send_response(sock, 'FILTER ADD %s %s' % (grp, f))
+                self.send(sock, 'FILTER ADD %s %s' % (grp, f))
+
+    def match_line(self, line):
+        if len(self.client_socks) < 1:
+            logger.error('No workers connected - unable to process line %s' % line)
+        else:
+            self.last_used_client_index += 1
+            if self.last_used_client_index >= len(self.client_socks):
+                self.last_used_client_index = 0
+
+            self.send(self.client_socks[self.last_used_client_index], 'MATCH %s' % line)
 
 
 class WorkerMaster(GenericMaster):
@@ -46,3 +61,6 @@ class WorkerMaster(GenericMaster):
 
     def pre_run(self):
         self.master_thread.set_filters(self.filters)
+
+    def match_line(self, line):
+        self.master_thread.match_line(line)

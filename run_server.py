@@ -14,7 +14,7 @@ def main(config):
     log.init(config.get('server', 'log_level'))
 
     wm = WorkerMaster(config.get('server', 'worker_listen'), filters=config.get('filters', 'regex').split('\n'))
-    pm = ProviderMaster(config.get('server', 'provider_listen'))
+    pm = ProviderMaster(config.get('server', 'provider_listen'), worker_master=wm)
     try:
         wm.run()
         pm.run()

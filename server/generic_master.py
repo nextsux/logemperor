@@ -11,6 +11,7 @@ class GenericMasterThread(threading.Thread):
         self.sock = sock
         self.keep_going = False
         self.select_rlist = []
+        self.client_socks = []
         self.filters = {}
         threading.Thread.__init__(self)
 
@@ -27,6 +28,7 @@ class GenericMasterThread(threading.Thread):
                     conn, client_address = self.sock.accept()
                     logger.info('New %s connection from %s' % (self.__class__.__name__, str(client_address)))
                     self.select_rlist.append(conn)
+                    self.client_socks.append(conn)
                     self.new_connection(conn)
                 else:
                     # new data from client
@@ -36,10 +38,11 @@ class GenericMasterThread(threading.Thread):
                         logger.info('%s connection %s closed' % (self.__class__.__name__, str(sock.getpeername())))
                         sock.close()
                         self.select_rlist.remove(sock)
+                        self.client_socks.remove(sock)
                     else:
                         try:
                             line = data.decode('UTF-8').strip()
-                            logger.debug('%s got line from provider: %s' % (self.__class__.__name__, line))
+                            logger.debug('%s got line: %s' % (self.__class__.__name__, line))
                             self.process_command(sock, line)
                         except UnicodeDecodeError:
                             logger.warn('%s recieved invalid data' % (self.__class__.__name__, ))
@@ -50,8 +53,8 @@ class GenericMasterThread(threading.Thread):
     def process_command(self, sock, command):
         pass
 
-    def send_response(self, sock, response):
-        sock.send(bytes(response + "\n", 'UTF-8'))
+    def send(self, sock, line):
+        sock.send(bytes(line + "\n", 'UTF-8'))
 
     def request_stop(self):
         self.keep_going = False
