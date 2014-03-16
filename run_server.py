@@ -7,16 +7,20 @@ import time
 import log
 
 from server.worker_master import WorkerMaster
+from server.provider_master import ProviderMaster
 
 
 def main(config):
     log.init(config.get('server', 'log_level'))
 
-    wm = WorkerMaster(config.get('server', 'worker_listen'), config.get('filters', 'regex').split('\n'))
+    wm = WorkerMaster(config.get('server', 'worker_listen'), filters=config.get('filters', 'regex').split('\n'))
+    pm = ProviderMaster(config.get('server', 'provider_listen'))
     try:
         wm.run()
+        pm.run()
     except KeyboardInterrupt:
         wm.stop()
+        pm.stop()
 
 
 if __name__ == "__main__":

@@ -9,6 +9,7 @@ class TestProviderFile(unittest.TestCase):
     def setUp(self):
         self.logfd, self.logfile = tempfile.mkstemp()
         self.provider = File(self.logfile)
+        self.provider.open()
 
     def tearDown(self):
         os.close(self.logfd)

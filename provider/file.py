@@ -11,11 +11,12 @@ class File(object):
         self.log = None
         self.loginode = None
 
-    def open(self):
+    def open(self, seek_to_end=True):
         if not self.log:
             self.log = open(self.logfile, 'r')
             self.loginode = os.fstat(self.log.fileno()).st_ino
-            self.log.seek(0, io.SEEK_END)
+            if seek_to_end:
+                self.log.seek(0, io.SEEK_END)
 
     def close(self):
         if self.log:
@@ -24,7 +25,7 @@ class File(object):
 
     def reopen(self):
         self.close()
-        self.open()
+        self.open(seek_to_end=False)
 
     def get_next(self):
         self.open()
