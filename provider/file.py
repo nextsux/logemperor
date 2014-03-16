@@ -1,5 +1,8 @@
-from log import logger
 import os
+import io
+import time
+
+from log import logger
 
 
 class File(object):
@@ -12,6 +15,7 @@ class File(object):
         if not self.log:
             self.log = open(self.logfile, 'r')
             self.loginode = os.fstat(self.log.fileno()).st_ino
+            self.log.seek(0, io.SEEK_END)
 
     def close(self):
         if self.log:
@@ -26,7 +30,7 @@ class File(object):
         self.open()
 
         l = self.log.readline()
-        if l == '':
+        if not l:
             if self.log.tell() > os.fstat(self.log.fileno()).st_size:
                 self.log.seek(0)
                 l = self.log.readline()
@@ -35,5 +39,7 @@ class File(object):
                 logger.info('Log file %s was re-created, reopened' % self.logfile)
                 self.reopen()
                 l = self.log.readline()
+            else:
+                time.sleep(0.5)
 
         return l.strip()
