@@ -1,8 +1,10 @@
 import socket
 import os
 import threading
-from log import logger
 from select import select
+
+from log import logger
+import utils
 
 
 class WorkMasterThread(threading.Thread):
@@ -24,7 +26,7 @@ class WorkMasterThread(threading.Thread):
                 if sock == self.sock:
                     # new connection from worker
                     conn, client_address = self.sock.accept()
-                    logger.info('New worker connection from %s:%i' % (client_address[0], client_address[1]))
+                    logger.info('New worker connection from %s' % str(client_address))
                     self.select_rlist.append(conn)
                     self.push_filters_to_client(conn)
                 else:
@@ -80,27 +82,7 @@ class WorkerMaster(object):
         self.prepare_filters(filters if filters is not None else [])
 
     def prepare_sock(self, listen_on):
-        if listen_on.startswith('tcp://'):
-            self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            l = listen_on[6:].split(':')
-            self.sock.bind((l[0], int(l[1])))
-        elif listen_on.startswith('tcp6://'):
-            self.sock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
-            self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-            l = listen_on[7:]
-            port_sep = l.rfind(':')
-            addr, port = l[:port_sep].strip('[]'), int(l[port_sep + 1:])
-            self.sock.bind((addr, port))
-        elif listen_on.startswith('sock://'):
-            self.sock = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-            self.sock_file = listen_on[7:]
-            self.sock.bind(self.sock_file)
-        else:
-            raise NotImplementedError('Unknown listen type')
-
-        self.sock.setblocking(0)
-        self.sock.listen(5)
+        self.sock, self.sock_file = utils.socket_bind_from_text(listen_on)
 
     def prepare_filters(self, filters):
         self.filters = {}
