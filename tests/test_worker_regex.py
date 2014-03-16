@@ -1,5 +1,4 @@
 import unittest
-import re
 
 from worker.regex import Regex
 
