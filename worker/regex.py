@@ -1,4 +1,5 @@
 import re
+from log import logger
 
 
 class Regex(object):
@@ -25,6 +26,7 @@ class Regex(object):
 
     def add_rule(self, grp, regex):
         if regex not in self.get_rules(grp):
+            logger.debug('Added regex %s to group %s' % (regex, grp))
             self.rules[grp] = self.rules.get(grp, []) + [re.compile(regex), ]
 
     def remove_rule(self, grp, regex):

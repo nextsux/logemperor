@@ -1,4 +1,5 @@
 from systemd import journal
+import time
 
 
 class Journald(object):
@@ -9,6 +10,8 @@ class Journald(object):
         self.j.seek_tail()
         self.j.get_previous()
 
-    def get_data(self):
+    def get_next(self):
         e = self.j.get_next()
+        if not e:
+            time.sleep(0.5)
         return e.get('MESSAGE', '').strip()

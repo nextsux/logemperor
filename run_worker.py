@@ -6,25 +6,17 @@ import sys
 import time
 import log
 
-from server.worker_master import WorkerMaster
-from server.provider_master import ProviderMaster
+from worker.worker import Worker
 
 
 def main(config):
-    log.init(config.get('server', 'log_level'))
+    log.init(config.get('worker', 'log_level'))
 
-    wm = WorkerMaster(config.get('server', 'worker_listen'), filters=config.get('filters', 'regex').split('\n'))
-    pm = ProviderMaster(config.get('server', 'provider_listen'))
-    try:
-        wm.run()
-        pm.run()
-    except KeyboardInterrupt:
-        wm.stop()
-        pm.stop()
-
+    w = Worker(config.get('worker', 'server_at'))
+    w.run()
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Run LogEmperor')
+    parser = argparse.ArgumentParser(description='Run LogEmperor Worker')
     parser.add_argument(
         '-c',
         '--config',
