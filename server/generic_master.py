@@ -42,8 +42,9 @@ class GenericMasterThread(threading.Thread):
                     else:
                         try:
                             line = data.decode('UTF-8').strip()
-                            logger.debug('%s got line: %s' % (self.__class__.__name__, line))
-                            self.process_command(sock, line)
+                            if line != '':
+                                logger.debug('%s got line: %s' % (self.__class__.__name__, line))
+                                self.process_command(sock, line)
                         except UnicodeDecodeError:
                             logger.warn('%s recieved invalid data' % (self.__class__.__name__, ))
 

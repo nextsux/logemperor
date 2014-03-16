@@ -3,6 +3,10 @@ from log import logger
 
 
 class Regex(object):
+    REGEX_REPLACEMENTS = {
+        '<HOST>': '(?:::f{4,6}:)?(?P<host>[\w\-.^_]*\w)'
+    }
+
     def __init__(self):
         self.rules = {}
 
@@ -25,11 +29,13 @@ class Regex(object):
             return []
 
     def add_rule(self, grp, regex):
+        regex = self._replace_regex_shortcuts(regex)
         if regex not in self.get_rules(grp):
             logger.debug('Added regex %s to group %s' % (regex, grp))
             self.rules[grp] = self.rules.get(grp, []) + [re.compile(regex), ]
 
     def remove_rule(self, grp, regex):
+        regex = self._replace_regex_shortcuts(regex)
         newrules = [x for x in self.rules[grp] if x.pattern != regex]
         if not (len(newrules) < len(self.rules[grp])):
             raise KeyError()
@@ -40,6 +46,12 @@ class Regex(object):
 
     def remove_rules_all(self):
         self.rules = {}
+
+    @classmethod
+    def _replace_regex_shortcuts(cls, regex):
+        for k, v in cls.REGEX_REPLACEMENTS.items():
+            regex = regex.replace(k, v)
+        return regex
 
     def __iter__(self):
         self.regex_iter = self.compiled_regex_generator()

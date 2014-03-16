@@ -17,6 +17,8 @@ class WorkMasterThread(GenericMasterThread):
             self.send(sock, 'BYE')
             self.select_rlist.remove(sock)
             sock.close()
+        elif command.startswith('HIT '):
+            logger.info(command)
         else:
             self.send(sock, 'UNKNOWN COMMAND')
 
