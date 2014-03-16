@@ -34,8 +34,8 @@ def create_socket_from_text(text):
 
 def socket_bind_from_text(text):
     sock_info = create_socket_from_text(text)
-    sock_info['sock'].bind(sock_info['bind_to'])
     sock_info['sock'].setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+    sock_info['sock'].bind(sock_info['bind_to'])
     sock_info['sock'].setblocking(0)
     sock_info['sock'].listen(5)
     return sock_info['sock'], sock_info.get('file', None)

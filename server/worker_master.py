@@ -69,7 +69,7 @@ class WorkMasterThread(threading.Thread):
     def push_filters_to_client(self, sock):
         for grp, x in self.filters.items():
             for f in x:
-                self.send_response(sock, 'FILTER ADD %s %s' % (grp, x))
+                self.send_response(sock, 'FILTER ADD %s %s' % (grp, f))
 
 
 class WorkerMaster(object):
@@ -78,7 +78,7 @@ class WorkerMaster(object):
         self.master_thread = None
 
         self.prepare_sock(listen_on)
-        self.prepare_filters(filters if filters is not None else [])
+        self.prepare_filters(filters if filters is not None else {})
 
     def prepare_sock(self, listen_on):
         self.sock, self.sock_file = utils.socket_bind_from_text(listen_on)
