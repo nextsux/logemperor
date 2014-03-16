@@ -67,7 +67,6 @@ class WorkMasterThread(threading.Thread):
             self.push_filters_to_client(c)
 
     def push_filters_to_client(self, sock):
-        self.send_response(sock, 'FILTER CLEAR')
         for grp, x in self.filters.items():
             for f in x:
                 self.send_response(sock, 'FILTER ADD %s %s' % (grp, x))
