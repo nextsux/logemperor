@@ -4,8 +4,20 @@ import configparser
 import os
 import sys
 import time
+import log
 
 from server.worker_master import WorkerMaster
+
+
+def main(config):
+    log.init(config.get('server', 'log_level'))
+
+    wm = WorkerMaster(config.get('server', 'worker_listen'), config.get('filters', 'regex').split('\n'))
+    try:
+        wm.run()
+    except KeyboardInterrupt:
+        wm.stop()
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run LogEmperor')
@@ -27,8 +39,4 @@ if __name__ == "__main__":
     config = configparser.ConfigParser()
     config.read(args.config)
 
-    wm = WorkerMaster(config.get('server', 'worker_listen'))
-    try:
-        wm.run()
-    except KeyboardInterrupt:
-        wm.stop()
+    main(config)

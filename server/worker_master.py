@@ -10,6 +10,7 @@ class WorkMasterThread(threading.Thread):
         self.sock = sock
         self.keep_going = False
         self.select_rlist = []
+        self.filters = {}
         threading.Thread.__init__(self)
 
     def run(self):
@@ -25,6 +26,7 @@ class WorkMasterThread(threading.Thread):
                     conn, client_address = self.sock.accept()
                     logger.info('New worker connection from %s:%i' % (client_address[0], client_address[1]))
                     self.select_rlist.append(conn)
+                    self.push_filters_to_client(conn)
                 else:
                     # new data from client
                     data = sock.recv(4096)
@@ -33,7 +35,10 @@ class WorkMasterThread(threading.Thread):
                         sock.close()
                         self.select_rlist.remove(sock)
                     else:
-                        self.process_command(sock, data.decode('UTF-8').strip())
+                        try:
+                            self.process_command(sock, data.decode('UTF-8').strip())
+                        except UnicodeDecodeError:
+                            logger.warn('Recieved invalid data')
 
     def request_stop(self):
         self.keep_going = False
@@ -51,12 +56,30 @@ class WorkMasterThread(threading.Thread):
     def send_response(self, sock, response):
         sock.send(bytes(response + "\n", 'UTF-8'))
 
+    def set_filters(self, filters):
+        self.filters = filters
+        self.push_filters_to_all_clients()
+
+    def push_filters_to_all_clients(self):
+        for c in self.select_rlist:
+            self.push_filters_to_client(c)
+
+    def push_filters_to_client(self, sock):
+        self.send_response(sock, 'FILTER CLEAR')
+        for grp, x in self.filters.items():
+            for f in x:
+                self.send_response(sock, 'FILTER ADD %s %s' % (grp, x))
+
 
 class WorkerMaster(object):
-    def __init__(self, listen_on):
+    def __init__(self, listen_on, filters=None):
         self.sock_file = None
         self.master_thread = None
 
+        self.prepare_sock(listen_on)
+        self.prepare_filters(filters if filters is not None else [])
+
+    def prepare_sock(self, listen_on):
         if listen_on.startswith('tcp://'):
             self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -79,8 +102,18 @@ class WorkerMaster(object):
         self.sock.setblocking(0)
         self.sock.listen(5)
 
+    def prepare_filters(self, filters):
+        self.filters = {}
+        for f in filters:
+            grp, regex = f[:f.find(':')], f[f.find(':') + 1:]
+
+            if grp not in self.filters.keys():
+                self.filters[grp] = []
+            self.filters[grp].append(regex)
+
     def run(self):
         self.master_thread = WorkMasterThread(self.sock)
+        self.master_thread.set_filters(self.filters)
         self.master_thread.start()
 
     def stop(self):
