@@ -34,6 +34,7 @@ class WorkMasterThread(threading.Thread):
                     data = sock.recv(4096)
                     if not data:
                         # connection closed by client
+                        logger.info('Worker connection %s closed' % str(sock.getpeername()))
                         sock.close()
                         self.select_rlist.remove(sock)
                     else:

@@ -39,3 +39,9 @@ def socket_bind_from_text(text):
     sock_info['sock'].setblocking(0)
     sock_info['sock'].listen(5)
     return sock_info['sock'], sock_info.get('file', None)
+
+
+def socket_connect_from_text(text):
+    sock_info = create_socket_from_text(text)
+    sock_info['sock'].connect(sock_info['bind_to'])
+    return sock_info['sock']
