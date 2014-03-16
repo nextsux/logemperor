@@ -1,6 +1,7 @@
 import socket
 import os
 import threading
+from log import logger
 from select import select
 
 
@@ -22,6 +23,7 @@ class WorkMasterThread(threading.Thread):
                 if sock == self.sock:
                     # new connection from worker
                     conn, client_address = self.sock.accept()
+                    logger.info('New worker connection from %s:%i' % (client_address[0], client_address[1]))
                     self.select_rlist.append(conn)
                 else:
                     # new data from client

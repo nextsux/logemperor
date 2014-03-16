@@ -1,4 +1,4 @@
-import logging
+from log import logger
 import os
 
 
@@ -30,9 +30,9 @@ class File(object):
             if self.log.tell() > os.fstat(self.log.fileno()).st_size:
                 self.log.seek(0)
                 l = self.log.readline()
-                logging.info('Log file %s was trimmed, seeked to beginning' % self.logfile)
+                logger.info('Log file %s was trimmed, seeked to beginning' % self.logfile)
             elif os.stat(self.logfile).st_ino != self.loginode:
-                logging.info('Log file %s was re-created, reopened' % self.logfile)
+                logger.info('Log file %s was re-created, reopened' % self.logfile)
                 self.reopen()
                 l = self.log.readline()
 
