@@ -19,6 +19,7 @@ class WorkMasterThread(GenericMasterThread):
             sock.close()
         elif command.startswith('HIT '):
             logger.info(command)
+            self.send(sock, 'BULLSEYE')
         else:
             self.send(sock, 'UNKNOWN COMMAND')
 
@@ -37,7 +38,7 @@ class WorkMasterThread(GenericMasterThread):
 
     def match_line(self, line):
         if len(self.client_socks) < 1:
-            logger.error('No workers connected - unable to process line %s' % line)
+            logger.error('No workers connected - unable to process line "%s"' % line)
         else:
             self.last_used_client_index += 1
             if self.last_used_client_index >= len(self.client_socks):
@@ -50,7 +51,7 @@ class WorkerMaster(GenericMaster):
     master_thread_class = WorkMasterThread
 
     def prepare(self, *args, **kwargs):
-        self.prepare_filters(kwargs.pop('filters', {}))
+        self.prepare_filters(kwargs.pop('filters', []))
 
     def prepare_filters(self, filters):
         self.filters = {}

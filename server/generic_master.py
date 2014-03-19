@@ -35,7 +35,11 @@ class GenericMasterThread(threading.Thread):
                     data = sock.recv(4096)
                     if not data:
                         # connection closed by client
-                        logger.info('%s connection %s closed' % (self.__class__.__name__, str(sock.getpeername())))
+                        try:
+                            peer = sock.getpeername()
+                        except:
+                            peer = "UNKNOWN"
+                        logger.info('%s connection %s closed' % (self.__class__.__name__, str(peer)))
                         sock.close()
                         self.select_rlist.remove(sock)
                         self.client_socks.remove(sock)
@@ -48,10 +52,10 @@ class GenericMasterThread(threading.Thread):
                         except UnicodeDecodeError:
                             logger.warn('%s recieved invalid data' % (self.__class__.__name__, ))
 
-    def new_connection(self, conn):
+    def new_connection(self, conn):  # pragma: no cover
         pass
 
-    def process_command(self, sock, command):
+    def process_command(self, sock, command):  # pragma: no cover
         pass
 
     def send(self, sock, line):
@@ -71,7 +75,7 @@ class GenericMaster(object):
         self.prepare_sock(listen_on)
         self.prepare(*args, **kwargs)
 
-    def prepare(*args, **kwargs):
+    def prepare(*args, **kwargs):  # pragma: no cover
         pass
 
     def prepare_sock(self, listen_on):
@@ -82,7 +86,7 @@ class GenericMaster(object):
         self.pre_run()
         self.master_thread.start()
 
-    def pre_run(self):
+    def pre_run(self):  # pragma: no cover
         pass
 
     def stop(self):
