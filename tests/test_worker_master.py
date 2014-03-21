@@ -59,8 +59,9 @@ class TestWorkerMaster(unittest.TestCase):
             WorkerMaster('unknown://whatever')
 
     @patch.object(server.worker_master.logger, 'info')
+    @patch.object(server.worker_master.logger, 'warn')
     @prepare_sockfile
-    def test_commands(self, mock_logger_info, sock_file):
+    def test_commands(self, mock_logger_warn, mock_logger_info, sock_file):
         wm = WorkerMaster('sock://%s' % sock_file)
         wm.run()
 
@@ -79,8 +80,13 @@ class TestWorkerMaster(unittest.TestCase):
             self.assertEqual(s.recv(1024).decode('UTF-8').strip(), 'BULLSEYE')
             mock_logger_info.assert_called_once_with('HIT grp 1.1.1.1')
 
+            s.send(b"\xFF\xFF\n")
+            self.assertEqual(s.recv(1024).decode('UTF-8').strip(), 'WHAT?')
+            mock_logger_warn.assert_called_once_with('WorkMasterThread recieved invalid data')
+
             s.send(bytes('QUIT\n', 'UTF-8'))
             self.assertEqual(s.recv(1024).decode('UTF-8').strip(), 'BYE')
+
 
             with self.assertRaises(BrokenPipeError):
                 s.send(bytes('ANYTHING\n', 'UTF-8'))

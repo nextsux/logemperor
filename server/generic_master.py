@@ -50,6 +50,7 @@ class GenericMasterThread(threading.Thread):
                                 logger.debug('%s got line: %s' % (self.__class__.__name__, line))
                                 self.process_command(sock, line)
                         except UnicodeDecodeError:
+                            self.send(sock, 'WHAT?')
                             logger.warn('%s recieved invalid data' % (self.__class__.__name__, ))
 
     def new_connection(self, conn):  # pragma: no cover
