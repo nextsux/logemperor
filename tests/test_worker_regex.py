@@ -51,7 +51,7 @@ class TestWorkerRegex(unittest.TestCase):
         self.w.add_rule('test2', '^rule2$')
         self.w.add_rule('test2', '^rule3$')
 
-        regexes = [x.pattern for x in self.w.compiled_regex_generator()]
+        regexes = [x[1].pattern for x in self.w.compiled_regex_generator()]
         self.assertEqual(sorted(regexes), sorted(['^rule1$', '^rule2$', '^rule3$', ]))
 
     def test_iter(self):
@@ -61,6 +61,6 @@ class TestWorkerRegex(unittest.TestCase):
 
         patterns = []
         for x in self.w:
-            patterns.append(x.pattern)
+            patterns.append(x[1].pattern)
 
         self.assertEqual(sorted(patterns), sorted(['^rule1$', '^rule2$', '^rule3$', ]))

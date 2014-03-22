@@ -12,18 +12,18 @@ class TestProviderJournald(unittest.TestCase):
     def log_message(self, msg):
         journal.send(msg, SYSLOG_IDENTIFIER='logemperor-test')
         # wait for log message to process
-        time.sleep(0.05)
+        time.sleep(0.2)
 
     def test_get_data_empty(self):
-        self.assertEqual(self.provider.get_data(), '')
+        self.assertEqual(self.provider.get_next(), '')
 
     def test_get_data(self):
         self.log_message('test_line1')
-        self.assertEqual(self.provider.get_data(), 'test_line1')
+        self.assertEqual(self.provider.get_next(), 'test_line1')
 
     def test_get_data_buffer(self):
         self.log_message('test_line2')
         self.log_message('test_line3')
 
-        self.assertEqual(self.provider.get_data(), 'test_line2')
-        self.assertEqual(self.provider.get_data(), 'test_line3')
+        self.assertEqual(self.provider.get_next(), 'test_line2')
+        self.assertEqual(self.provider.get_next(), 'test_line3')
